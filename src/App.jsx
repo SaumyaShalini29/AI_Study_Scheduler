@@ -293,6 +293,7 @@ import {
   SignInButton,
   UserButton,
 } from '@clerk/clerk-react';
+import QuizGenerator from './components/QuizGenerator';
 
 const App = () => {
   const [subjects, setSubjects] = useState([]);
@@ -341,6 +342,10 @@ const App = () => {
             <Link to="/suggestion" className="text-black dark:text-white">
               Get Motivation
             </Link>
+            <Link to="/quiz" className="text-black dark:text-white">
+            Quiz Generator
+            </Link>
+
           </div>
           <button
             onClick={() => setDarkMode((prev) => !prev)}
@@ -423,6 +428,15 @@ const App = () => {
               </SignedOut>
             }
           />
+          <Route
+  path="/quiz"
+  element={
+    <SignedIn>
+      <QuizGenerator />
+    </SignedIn>
+  }
+/>
+
 
           {/* Clerk Auth Pages */}
           <Route path="/login" element={<SignIn routing="path" path="/login" />} />

@@ -5,8 +5,8 @@ import StreakTracker from "../StreakTracker";
 
 function Dashboard() {
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">📚 My Study Dashboard</h1>
+    <div className="p-4 bg-slate-200 dark:bg-gray-800 ">
+      <h1 className="text-2xl font-bold mb-4 text-blue-700 dark:text-white">📚 My Study Dashboard</h1>
              <StreakTracker/>
 
       <SubjectAnalytics />

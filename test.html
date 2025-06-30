@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <button onclick="testAPI()">Test /week-summary</button>
+  <pre id="output"></pre>
+
+  <script>
+    async function testAPI() {
+      const res = await fetch('http://localhost:5000/api/subject/week-summary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: "your_actual_clerk_user_id" })
+      });
+      const json = await res.json();
+      document.getElementById('output').textContent = JSON.stringify(json, null, 2);
+    }
+  </script>
+</body>
+</html>

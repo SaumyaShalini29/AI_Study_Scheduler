@@ -56,15 +56,15 @@ const StreakTracker = () => {
       .then((res) => res.json())
       .then((data) => {
         setStreak(data.streak || 0);
-        if (data.streak >= 7) setBadge("🏅 7-Day Legend!");
-        else if (data.streak >= 3) setBadge("🔥 3-Day Streak!");
+        if (data.streak >= 7) setBadge("🏅 30-Day Legend!");
+        else if (data.streak >= 3) setBadge("🔥 7-Day Streak!");
       })
       .catch((err) => console.error("Streak fetch error:", err));
   }, [user]);
 
   return (
-    <div className="bg-white dark:bg-gray-800 text-center p-4 rounded-xl shadow-md my-4">
-      <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-2">
+    <div className="bg-white dark:bg-gray-800 text-center p-4 rounded-xl shadow-md my-4 ">
+      <h3 className="text-lg font-bold text-blue-600 dark:text-white mb-2">
         📆 Study Streak: {streak} days
       </h3>
       {badge && (

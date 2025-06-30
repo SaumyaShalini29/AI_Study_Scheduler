@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+/*import mongoose from 'mongoose';
 
 const StudyHistorySchema = new mongoose.Schema({
   subject: String,
@@ -10,3 +10,16 @@ const StudyHistorySchema = new mongoose.Schema({
 });
 
 export default mongoose.model('StudyHistory', StudyHistorySchema);
+*/
+const StudyHistorySchema = new mongoose.Schema({
+  userId: {
+    type: String,
+    required: true,
+  },
+  subject: String,
+  suggestedDuration: Number,
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  }
+});

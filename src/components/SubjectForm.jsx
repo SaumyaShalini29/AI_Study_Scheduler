@@ -528,7 +528,9 @@ try {
 
 export default SubjectForm;
 */
+/*
 import React, { useState, useEffect } from 'react';
+import { useUser } from "@clerk/clerk-react"; 
 const generateId = () => Date.now() + Math.random();
 
 const SubjectForm = ({ existingSubject = null, onSubmit }) => {
@@ -576,68 +578,82 @@ const SubjectForm = ({ existingSubject = null, onSubmit }) => {
     ]);
   };
 
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage('');
-    setSuggestions([]);
+const handleFormSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setMessage('');
+  setSuggestions([]);
 
-    try {
-      const response = await fetch('http://localhost:5000/api/subject/bulk-add', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subjects }),
-      });
-
-      if (response.ok) {
-        setMessage('Subjects submitted successfully ✅');
-
-        const fetchedSuggestions = await Promise.all(
-          subjects.map(async (subject) => {
-            const res = await fetch('http://localhost:5000/api/schedule/suggest', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(subject),
-            });
-
-            if (!res.ok) return { name: subject.name, error: '❌ Suggestion failed' };
-
-            const data = await res.json();
-            return {
-              name: subject.name,
-              suggestedDuration: data.suggestedDuration || '❌ No suggestion',
-              idealSlot: data.idealSlot || 'N/A',
-              breakAfter: data.breakAfter || 'N/A',
-              focusTip: data.focusTip || 'N/A',
-              taskSuggestion: data.taskSuggestion || 'N/A',
-            };
-          })
-        );
-
-        setSuggestions(fetchedSuggestions);
-
-        setSubjects([
-          {
-            id: generateId(),
-            name: '',
-            priority: 'Medium',
-            difficulty: 'Medium',
-            performance: '',
-            studyDuration: '',
-            studyTime: 'Morning',
-          },
-        ]);
-      } else {
-        setMessage('Failed to submit subjects ❌');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      setMessage('Server error ❌');
-    }
+  if (!user?.id) {
+    setMessage("❌ User not authenticated");
     setLoading(false);
+    return;
+  }
 
-    if (onSubmit) onSubmit(subjects);
-  };
+  // ✅ Attach userId to each subject
+  const subjectsWithUserId = subjects.map(subject => ({
+    ...subject,
+    userId: user.id,
+  }));
+
+  try {
+    const response = await fetch('http://localhost:5000/api/subject/bulk-add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subjects: subjectsWithUserId }),
+    });
+
+    if (response.ok) {
+      setMessage('Subjects submitted successfully ✅');
+
+      const fetchedSuggestions = await Promise.all(
+        subjectsWithUserId.map(async (subject) => {
+          const res = await fetch('http://localhost:5000/api/schedule/suggest', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(subject),
+          });
+
+          if (!res.ok) return { name: subject.name, error: '❌ Suggestion failed' };
+
+          const data = await res.json();
+          return {
+            name: subject.name,
+            suggestedDuration: data.suggestedDuration || '❌ No suggestion',
+            idealSlot: data.idealSlot || 'N/A',
+            breakAfter: data.breakAfter || 'N/A',
+            focusTip: data.focusTip || 'N/A',
+            taskSuggestion: data.taskSuggestion || 'N/A',
+          };
+        })
+      );
+
+      setSuggestions(fetchedSuggestions);
+
+      setSubjects([
+        {
+          id: generateId(),
+          name: '',
+          priority: 'Medium',
+          difficulty: 'Medium',
+          performance: '',
+          studyDuration: '',
+          studyTime: 'Morning',
+        },
+      ]);
+    } else {
+      setMessage('Failed to submit subjects ❌');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    setMessage('Server error ❌');
+  }
+
+  setLoading(false);
+
+  if (onSubmit) onSubmit(subjectsWithUserId); // Optional
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-blue-100 to-blue-300 dark:from-gray-800 dark:to-gray-900 transition-all duration-500">
@@ -664,7 +680,7 @@ const SubjectForm = ({ existingSubject = null, onSubmit }) => {
     key={subject.id}
     className="mb-6 border-l-4 border-blue-400 p-4 rounded bg-white dark:bg-gray-700 shadow-md transition-transform hover:scale-[1.01]"
   >
-    {/* Subject Name */}
+    
     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
       Subject Name
     </label>
@@ -678,7 +694,7 @@ const SubjectForm = ({ existingSubject = null, onSubmit }) => {
     />
 
     <div className="flex flex-wrap gap-4 mb-3">
-      {/* Priority */}
+      
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
           Priority
@@ -694,7 +710,7 @@ const SubjectForm = ({ existingSubject = null, onSubmit }) => {
         </select>
       </div>
 
-      {/* Difficulty */}
+      
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
           Difficulty
@@ -710,7 +726,7 @@ const SubjectForm = ({ existingSubject = null, onSubmit }) => {
         </select>
       </div>
 
-      {/* Performance */}
+      
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
           Performance (%)
@@ -729,7 +745,7 @@ const SubjectForm = ({ existingSubject = null, onSubmit }) => {
     </div>
 
     <div className="flex flex-wrap gap-4">
-      {/* Study Duration */}
+      
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
           Study Duration (min)
@@ -745,7 +761,7 @@ const SubjectForm = ({ existingSubject = null, onSubmit }) => {
         />
       </div>
 
-      {/* Study Time */}
+      
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
           Preferred Study Time
@@ -811,3 +827,279 @@ const SubjectForm = ({ existingSubject = null, onSubmit }) => {
 };
 
 export default SubjectForm;  
+*/
+import React, { useState, useEffect } from 'react';
+import { useUser } from "@clerk/clerk-react"; 
+
+const generateId = () => Date.now() + Math.random();
+
+const SubjectForm = ({ existingSubject = null, onSubmit }) => {
+  const { user } = useUser(); // ✅ FIXED: user defined from Clerk
+
+  const [subjects, setSubjects] = useState([
+    {
+      id: generateId(),
+      name: '',
+      priority: '',
+      difficulty: '',
+      performance: '',
+      studyDuration: '',
+      studyTime: '',
+    },
+  ]);
+
+  const [message, setMessage] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (existingSubject) {
+      setSubjects([{ ...existingSubject, id: generateId() }]);
+    }
+  }, [existingSubject]);
+
+  const handleChange = (id, field, value) => {
+    const updatedSubjects = subjects.map((subject) =>
+      subject.id === id ? { ...subject, [field]: value } : subject
+    );
+    setSubjects(updatedSubjects);
+  };
+
+  const addSubject = () => {
+    setSubjects([
+      ...subjects,
+      {
+        id: generateId(),
+        name: '',
+        priority: '',
+        difficulty: '',
+        performance: '',
+        studyDuration: '',
+        studyTime: '',
+      },
+    ]);
+  };
+
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage('');
+    setSuggestions([]);
+
+    if (!user?.id) {
+      setMessage("❌ User not authenticated");
+      setLoading(false);
+      return;
+    }
+
+    const subjectsWithUserId = subjects.map(subject => ({
+  ...subject,
+  name: subject.name.trim(), // ✅ Clean up name
+  userId: user.id,
+}));
+
+
+    try {
+      const response = await fetch('http://localhost:5000/api/subject/bulk-add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subjects: subjectsWithUserId }),
+      });
+
+      if (response.ok) {
+        setMessage('Subjects submitted successfully ✅');
+
+        const fetchedSuggestions = await Promise.all(
+          subjectsWithUserId.map(async (subject) => {
+            const res = await fetch('http://localhost:5000/api/schedule/suggest', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(subject),
+            });
+
+            if (!res.ok) return { name: subject.name, error: '❌ Suggestion failed' };
+
+            const data = await res.json();
+            return {
+              name: subject.name,
+              suggestedDuration: data.suggestedDuration || '❌ No suggestion',
+              idealSlot: data.idealSlot || 'N/A',
+              breakAfter: data.breakAfter || 'N/A',
+              focusTip: data.focusTip || 'N/A',
+              taskSuggestion: data.taskSuggestion || 'N/A',
+            };
+          })
+        );
+
+        setSuggestions(fetchedSuggestions);
+
+        setSubjects([
+          {
+            id: generateId(),
+            name: '',
+            priority: 'Medium',
+            difficulty: 'Medium',
+            performance: '',
+            studyDuration: '',
+            studyTime: 'Morning',
+          },
+        ]);
+      } else {
+        setMessage('Failed to submit subjects ❌');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setMessage('Server error ❌');
+    }
+
+    setLoading(false);
+    if (onSubmit) onSubmit(subjectsWithUserId);
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center p-6 bg-slate-200 dark:bg-gray-800 transition-all duration-500">
+      <form
+        onSubmit={handleFormSubmit}
+        className="bg-white dark:bg-gray-700 bg-opacity-90 backdrop-blur-md max-w-3xl w-full p-8 rounded-xl shadow-2xl animate-fade-in"
+      >
+        <h2 className="text-3xl font-bold mb-6 text-center text-blue-800 dark:text-blue-200">
+          {existingSubject ? 'Edit Subject' : '📘 Add Your Study Subjects'}
+        </h2>
+
+        {message && (
+          <div
+            className={`mb-4 text-sm font-semibold text-center ${
+              message.includes('❌') ? 'text-red-600' : 'text-green-600'
+            }`}
+          >
+            {message}
+          </div>
+        )}
+
+        {/* Your subject input fields are unchanged, keeping them intact */}
+
+        {subjects.map((subject) => (
+          <div
+            key={subject.id}
+            className="mb-6 border-l-4 border-blue-400 p-4 rounded bg-white dark:bg-gray-700 shadow-md transition-transform hover:scale-[1.01]"
+          >
+            {/* Name */}
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+              Enter the Subject Name
+            </label>
+            <input
+              type="text"
+              placeholder="Subject Name"
+              value={subject.name}
+              onChange={(e) => handleChange(subject.id, 'name', e.target.value)}
+              className="w-full mb-3 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
+              required
+            />
+
+            {/* Priority / Difficulty / Performance */}
+            <div className="flex flex-wrap gap-4 mb-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  Priority
+                </label>
+                <select
+                  value={subject.priority}
+                  onChange={(e) => handleChange(subject.id, 'priority', e.target.value)}
+                  className="p-3 border rounded-lg"
+                >
+                  <option value="High">High</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Low">Low</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  Difficulty level
+                </label>
+                <select
+                  value={subject.difficulty}
+                  onChange={(e) => handleChange(subject.id, 'difficulty', e.target.value)}
+                  className="p-3 border rounded-lg"
+                >
+                  <option value="Easy">Easy</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Hard">Hard</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  Subject Proficiency (%)
+                </label>
+                <input
+                  type="number"
+                  value={subject.performance}
+                  onChange={(e) => handleChange(subject.id, 'performance', e.target.value)}
+                  className="p-3 border rounded-lg w-32"
+                  required
+                  min="0"
+                  max="100"
+                />
+              </div>
+            </div>
+
+            {/* Duration & Time */}
+            <div className="flex flex-wrap gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  Study Duration (min)
+                </label>
+                <input
+                  type="number"
+                  value={subject.studyDuration}
+                  onChange={(e) => handleChange(subject.id, 'studyDuration', e.target.value)}
+                  className="p-3 border rounded-lg w-48"
+                  required
+                  min="1"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  Preferred Study Time
+                </label>
+                <select
+                  value={subject.studyTime}
+                  onChange={(e) => handleChange(subject.id, 'studyTime', e.target.value)}
+                  className="p-3 border rounded-lg"
+                >
+                  <option value="Morning">Morning</option>
+                  <option value="Afternoon">Afternoon</option>
+                  <option value="Evening">Evening</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {!existingSubject && (
+          <button
+            type="button"
+            onClick={addSubject}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg mr-4 transition-transform active:scale-95"
+            disabled={loading}
+          >
+            + Add Another Subject
+          </button>
+        )}
+
+        <button
+          type="submit"
+          className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition-transform active:scale-95 mt-4"
+          disabled={loading}
+        >
+          {loading ? 'Submitting...' : existingSubject ? 'Update Subject' : 'Submit'}
+        </button>
+
+      </form>
+    </div>
+  );
+}; 
+
+export default SubjectForm;

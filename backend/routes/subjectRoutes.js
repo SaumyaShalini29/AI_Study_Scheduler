@@ -103,6 +103,7 @@ router.get('/daily-priority', getDailySubjectPriority);
 
 export default router;
 */
+/*
 import express from 'express';
 import {
   getWeeklySummary,
@@ -129,3 +130,108 @@ router.get('/performance-breakdown', getPerformanceCategories); // ✅
 
 export default router;
 
+*/
+/*
+import express from 'express';
+import {
+  getWeeklySummary,
+  getTodaySummary,
+  bulkAddSubjects,
+  getDateSummary,
+  getTopSubject,
+  getDailyStudyTrend,
+  getDailySubjectPriority,
+  getPerformanceCategories
+} from '../controllers/subject.controller.js';
+
+const router = express.Router();
+
+// ✅ CHANGE TO POST
+router.post('/week-summary', getWeeklySummary);
+router.post('/today-summary', getTodaySummary);
+router.post('/top-subject', getTopSubject);
+router.post('/performance-breakdown', getPerformanceCategories);
+router.post('/daily-trend', getDailyStudyTrend);
+router.post('/daily-priority', getDailySubjectPriority);
+
+router.post('/bulk-add', bulkAddSubjects);
+router.get('/date-summary', getDateSummary); // keep GET if you're passing date in query
+// Or you can make it POST too for consistency
+
+export default router;
+*/
+
+
+
+import express from 'express';
+import {
+  getWeeklySummary,
+  getTodaySummary,
+  bulkAddSubjects,
+  getDateSummary,
+  getTopSubject,
+  getDailyStudyTrend,
+  getDailySubjectPriority,
+  getPerformanceCategories,
+  updateTodayWork // ✅ Added
+} from '../controllers/subject.controller.js';
+
+const router = express.Router();
+
+
+// Analytics routes
+//router.post('/week-summary', getWeeklySummary);
+//router.get('/week-summary', getWeeklySummary); 
+router.post('/week-summary', getWeeklySummary);
+
+router.post('/today-summary', getTodaySummary);
+router.post('/top-subject', getTopSubject);
+router.post('/performance-breakdown', getPerformanceCategories);
+router.post('/daily-trend', getDailyStudyTrend);
+router.post('/daily-priority', getDailySubjectPriority);
+
+// Subject routes
+router.post('/bulk-add', bulkAddSubjects);
+router.get('/date-summary', getDateSummary); // if using ?date=
+router.post('/update-today', updateTodayWork); // ✅ Added route
+router.get('/test', (req, res) => {
+  res.json({ message: "✅ subject route test working" });
+});
+
+export default router;
+/*
+import express from 'express';
+import {
+  getWeeklySummary,
+  getTodaySummary,
+  bulkAddSubjects,
+  getDateSummary,
+  getTopSubject,
+  getDailyStudyTrend,
+  getDailySubjectPriority,
+  getPerformanceCategories,
+  updateTodayWork
+} from '../controllers/subject.controller.js';
+
+const router = express.Router();
+
+// ✅ Analytics Routes
+router.post('/week-summary', getWeeklySummary);
+router.post('/today-summary', getTodaySummary);
+router.post('/top-subject', getTopSubject);
+router.post('/performance-breakdown', getPerformanceCategories);
+router.post('/daily-trend', getDailyStudyTrend);
+router.post('/daily-priority', getDailySubjectPriority);
+
+// ✅ Subject Routes
+router.post('/bulk-add', bulkAddSubjects);
+router.get('/date-summary', getDateSummary); // usage: ?userId=...&date=YYYY-MM-DD
+router.post('/update-today', updateTodayWork);
+
+// ✅ Test Route
+router.get('/test', (req, res) => {
+  res.json({ message: "✅ subject route test working" });
+});
+
+export default router;
+*/
