@@ -231,7 +231,10 @@ Rules:
       "X-Title": "Smart Study Scheduler"
     },
     body: JSON.stringify({
-      model: "meta-llama/llama-3-70b-instruct",
+      //model: "meta-llama/llama-3-70b-instruct",
+      model: "mistralai/mistral-7b-instruct", // ✅ use a working free model
+        max_tokens: 600,
+
       messages: [
         { role: "system", content: "You are a helpful and structured JSON-only study planner." },
         { role: "user", content: prompt }
